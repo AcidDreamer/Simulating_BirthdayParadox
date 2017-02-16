@@ -3,8 +3,8 @@
 #include <time.h>
 #include <unistd.h>
 
-#define NUMBER_OF_INDIVIDUALS  23
-#define DAYS 366  //Days you want + 1
+#define NUMBER_OF_INDIVIDUALS  23 // Number of people
+#define DAYS 365  //Days we want to simulate
 /*Global counter,counting the number of matches*/
 static long int happened_counter = 0 ;
 /*Global counter , counting the number of times we simulated the event*/
@@ -32,24 +32,20 @@ int main(){
 /*Create threads to ease the load*/
 void *count(){
     for(;;){
-        pthread_mutex_lock(&happenedMutex);
         simulation_counter++; //we are emulating 1 event
-        pthread_mutex_unlock(&happenedMutex);
         srand(time(NULL) + clock()+ getpid()); //Create a random seed
         int table[NUMBER_OF_INDIVIDUALS];
         int i,j;
         /*Fill the table with the number of individuals with a random day of birth */
         for(i=0;i<NUMBER_OF_INDIVIDUALS;i++){
-            table[i] = rand()% 365;
+            table[i] =  1 + (rand()% DAYS); //assign a random birthday
         }
         /*Check for possible matches */
         for(i=0;i<NUMBER_OF_INDIVIDUALS;i++){
             for(j=0;j<NUMBER_OF_INDIVIDUALS;j++){
-                if(table[i]==table[j] && i!=j){
-                    printf("%lf %lf \n",table[i],table[j]);
-                    pthread_mutex_lock(&happenedMutex);
+                /*if the values are the same and the i and j aren't the same entry*/
+                if(table[i]==table[j] && i!=j){ 
                     happened_counter++;
-                    pthread_mutex_unlock(&happenedMutex);
                 }
             }
         }
@@ -57,11 +53,13 @@ void *count(){
     }
     pthread_exit(NULL);
 }
+/*To seconds after initialization print the data,then repeat after 5 seconds */
 void *print(){
+    sleep(2);
     for(;;){
-        printf("My result : %ld at %ld tries\n",happened_counter,simulation_counter);
-        printf("Percentage = %ld %\n",happened_counter/simulation_counter);
-
+        printf("My result : %d at %d tries\n",happened_counter,simulation_counter);
+        printf("Percentage = %d %\n",happened_counter/simulation_counter);
         sleep(5);
     }
+    pthread_exit(NULL);
 }
