@@ -8,7 +8,10 @@
 /*Global counter,counting the number of matches*/
 static long happened_counter = 0 ;
 /*Global counter , counting the number of times we simulated the event*/
-static long combination_counter = 0 ;
+static long simulation_counter = 0 ;
+/*Mutexes to lock the resources */
+static  pthread_mutex_t happenedMutex = PTHREAD_MUTEX_INITIALIZER;          
+static  pthread_mutex_t simulationMutex = PTHREAD_MUTEX_INITIALIZER;          
 
 void *count();
 void *farm();
@@ -19,10 +22,11 @@ int main(){
     for(times_run = 0;times_run<HOW_MANY_TIMES;times_run++ ){
         /*Create a farm */
         pthread_t farmThread;
-        pthread_create(&farmThread, NULL, farm, NULL);          
+        pthread_create(&farmThread, NULL, farm, NULL);     
+        pthread_join(farmThread,NULL);
     }
     /*So some results*/
-    printf("My result : %ld at %ld tries\n",&happened_counter,&combination_counter);
+    printf("My result : %ld at %ld tries\n",happened_counter,simulation_counter);
     return 0;
 }
 
@@ -30,15 +34,19 @@ int main(){
 void *farm(){
     int i ;
     /*create 10 farms , HOW_MANY_TIMES*10  */
-    for(i=0;i<10;i++){
+    for(i=0;i<20;i++){
         pthread_t countThread;
         pthread_create(&countThread, NULL, farm, NULL);           // creating a thread to handle server messages
+        pthread_join(countThread,NULL);
     }
+    pthread_exit(NULL);
 }
 
 /*Create threads to ease the load*/
 void *count(){
-    combination_counter++; //we are emulating 1 event
+    pthread_mutex_lock(&happenedMutex);
+    simulation_counter++; //we are emulating 1 event
+    pthread_mutex_unlock(&happenedMutex);
     srand(time(NULL) + clock()+ getpid()); //Create a random seed
     int table[NUMBER_OF_INDIVIDUALS];
     int i,j;
@@ -49,8 +57,12 @@ void *count(){
     /*Check for possible matches */
     for(i<0;i<NUMBER_OF_INDIVIDUALS;i++){
         for(j<0;j<NUMBER_OF_INDIVIDUALS;j++){
-            if(table[i]==table[j]) happened_counter++;
+            if(table[i]==table[j]){
+                pthread_mutex_lock(&happenedMutex);
+                happened_counter++;
+                pthread_mutex_unlock(&happenedMutex);
+            }
         }
     }
-    sleep(1);
+    pthread_exit(NULL);
 }
