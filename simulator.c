@@ -5,6 +5,7 @@
 
 #define NUMBER_OF_INDIVIDUALS  23 // Number of people
 #define DAYS 365  //Days we want to simulate
+#define NUMBER_OF_SIMULATIONS 100000 //How many times are we gonna run the simulation
 /*Global counter,counting the number of matches*/
 static long int happened_counter = 0 ;
 /*Global counter , counting the number of times we simulated the event*/
@@ -25,6 +26,8 @@ int main(){
     pthread_t printThread;
     pthread_create(&printThread, NULL, print, NULL);     
     pthread_join(countThread,NULL);
+    printf("My result : %d at %d tries\n",happened_counter,simulation_counter);
+    printf("Percentage = %d %\n",happened_counter/simulation_counter);
 
     return 0;
 }
@@ -32,6 +35,7 @@ int main(){
 /*Create threads to ease the load*/
 void *count(){
     for(;;){
+        if(simulation_counter==NUMBER_OF_SIMULATIONS)break;
         simulation_counter++; //we are emulating 1 event
         srand(time(NULL) + clock()+ getpid()); //Create a random seed
         int table[NUMBER_OF_INDIVIDUALS];
@@ -57,8 +61,8 @@ void *count(){
 void *print(){
     sleep(2);
     for(;;){
-        printf("My result : %d at %d tries\n",happened_counter,simulation_counter);
-        printf("Percentage = %d %\n",happened_counter/simulation_counter);
+        printf("My result : %d at %d tries\n",happened_counter/2,simulation_counter);
+        printf("Percentage = %d %\n",(happened_counter/2)/simulation_counter);
         sleep(5);
     }
     pthread_exit(NULL);
