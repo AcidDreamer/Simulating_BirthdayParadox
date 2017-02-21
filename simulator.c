@@ -46,7 +46,7 @@ void *count(){
         }
         /*Check for possible matches */
         for(i=0;i<NUMBER_OF_INDIVIDUALS;i++){
-            for(j=0;j<NUMBER_OF_INDIVIDUALS;j++){
+            for(j=i;j<NUMBER_OF_INDIVIDUALS;j++){
                 /*if the values are the same and the i and j aren't the same entry*/
                 if(table[i]==table[j] && i!=j){ 
                     happened_counter++;
@@ -61,8 +61,8 @@ void *count(){
 void *print(){
     sleep(2);
     for(;;){
-        printf("My result : %d at %d tries\n",happened_counter/2,simulation_counter);
-        printf("Percentage = %d %\n",(happened_counter/2)/simulation_counter);
+        printf("My result : %d at %d tries\n",happened_counter,simulation_counter);
+        printf("Percentage = %d %\n",(happened_counter,simulation_counter);
         sleep(5);
     }
     pthread_exit(NULL);
